@@ -1,92 +1,67 @@
-/* ДЗ 5.1 - DOM Events */
+/* ДЗ 6.1 - Асинхронность и работа с сетью */
 
 /**
- * Функция должна добавлять обработчик fn события eventName к элементу target
+ * Функция должна создавать Promise, который должен быть resolved через seconds секунду после создания
  *
- * @param {string} eventName - имя события, на которое нужно добавить обработчик
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - обработчик
+ * @param {number} seconds - количество секунд, через которое Promise должен быть resolved
+ * @return {Promise}
  */
-function addListener(eventName, target, fn) {
-    target.addEventListener(eventName, fn);
-}
+function delayPromise(seconds) {
+  // var prom = new Promise (function (resolve, reject){
+  //     setTimeout(function () {
+  //         resolve('Promise');
+  //     }, 1000);
+  // });
+  //
+  // return prom;
 
-/**
- * Функция должна удалять обработчик fn события eventName у элемента target
- *
- * @param {string} eventName - имя события, для которого нужно удалить обработчик
- * @param {Element} target - элемент, у которого нужно удалить обработчик
- * @param {function} fn - обработчик
- */
-function removeListener(eventName, target, fn) {
-    target.removeEventListener(eventName, fn);
-}
-
-/**
- * Функция должна добавлять к target обработчик события eventName, который должен отменять действие по умолчанию
- *
- * @param {string} eventName - имя события, для которого нужно удалить обработчик
- * @param {Element} target - элемент, на который нужно добавить обработчик
- */
-function skipDefault(eventName, target) {
-    target.addEventListener(eventName, function (e) {
-
-        return e.preventDefault();
+    return new Promise (function (resolve, reject) {
+        setTimeout(resolve, seconds*1000);
     });
 }
 
 /**
- * Функция должна эмулировать событие click для элемента target
+ * Функция должна вернуть Promise, который должен быть разрешен массивом городов, загруженным из
+ * https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
+ * Элементы полученного массива должны быть отсортированы по имени города
  *
- * @param {Element} target - элемент, на который нужно добавить обработчик
+ * @return {Promise<Array<{name: String}>>}
  */
-function emulateClick(target) {
-    target.addEventListener('click', function() {
+function loadAndSortTowns() {
+    let url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
 
-    });
+    return new Promise (function (resolve, reject) {
+      
+        var req = new XMLHttpRequest();
 
-    var event = new Event ('click', { bubbles: true, cancelable: true });
+        req.open('get', 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json', true);
+        req.send();
+        req.onreadystatechange = function() {
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                alert( 'o_O');
+            } else {
 
-    target.dispatchEvent(event);
-}
+                var cityList = JSON.parse(req.responseText);
 
-/**
- * Функция должна добавить такой обработчик кликов к элементу target
- * который реагирует (вызывает fn) только на клики по элементам BUTTON внутри target
- *
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - функция, которую нужно вызвать при клике на элемент BUTTON внутри target
- */
-function delegate(target, fn) {
-    target.addEventListener ('click', function (evt) {
-        if (evt.target.tagName.toUpperCase() == 'BUTTON') {
-            fn();
+            }
+            cityList.sort(function (a, b) {
+                if (a.name > b.name) {
+                    return 1;
+                }
+                if (a.name < b.name) {
+
+                    return -1;
+                }
+
+                return 0;
+            });
+            resolve(cityList);
         }
     });
 }
 
-/**
- * *** Со звездочкой ***
- * Функция должна добавить такой обработчик кликов к элементу target
- * который сработает только один раз и удалится
- * Постарайтесь не создавать глобальных переменных
- *
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - обработчик
- */
-function once(target, fn) {
-    function qe () {
-        fn();
-        target.removeEventListener('click', qe);
-    }
-    target.addEventListener('click', qe);
-}
-
 export {
-    addListener,
-    removeListener,
-    skipDefault,
-    emulateClick,
-    delegate,
-    once
+    delayPromise,
+    loadAndSortTowns
 };
